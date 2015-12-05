@@ -43,25 +43,10 @@
     <Image Include="res\ui\game_status.bmp">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="res\ui\black_roof.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="res\ui\grey_roof.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="res\ui\blue_block.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="res\ui\green_block.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="res\ui\orange_block.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="res\ui\pink_block.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
     <Image Include="res\ui\background.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\ui\step.bmp">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

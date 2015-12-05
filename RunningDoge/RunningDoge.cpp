@@ -128,7 +128,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 VOID Init(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	//加载开始界面位图
-	m_hStart = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
+	m_hStartBmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
 		MAKEINTRESOURCE(IDB_START));
 	//加载故事讲述位图
 	m_hStoryStartBmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
@@ -142,36 +142,24 @@ VOID Init(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	//加载游戏状态位图
 	m_hGameStatusBmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
 		MAKEINTRESOURCE(IDB_GAME_STATUS));
-	//加载Block位图
-	int k;
-	for (k = 0; k < BLOCK_COLOR_NUM; ++k)
-	{
-		m_hBlockBmp[k] = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
-			MAKEINTRESOURCE(m_blockBmpNames[k]));
-	}
-	//加载屋顶位图
-	for (k = 0; k < ROOF_COLOR_NUM; ++k)
-	{
-		m_hRoofkBmp[k] = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
-			MAKEINTRESOURCE(m_roofBmpNames[k]));
-	}
-
+	//加载地形块位图
+	m_hStepBmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
+		MAKEINTRESOURCE(IDB_STEP));
 	//创建英雄、建筑
-	m_hero = CreateHero(200, 226, HERO_SIZE_X, HERO_SIZE_Y, m_hHeroBmp, 0, HERO_MAX_FRAME_NUM);
-	//m_building = CreateBuilding(0, 100, BUILDING_SIZE_X, BUILDING_SIZE_Y, m_hBuildingBmp);
+	m_hero = CreateHero(200, 238, HERO_SIZE_X, HERO_SIZE_Y, m_hHeroBmp, 0, HERO_MAX_FRAME_NUM);
 	//创建地形
+	int k;
 	for (k = 0; k < MAX_TERRIAN_NUM; ++k)
 	{
 		if (k % 4 == 0)
 		{
 			continue;
 		}
-		m_terrian[k] = CreateTerrian(k * 65, 220 + 50 * (k % 2), BLOCK_SIZE_X, 300, m_hBlockBmp[k % 4], m_hRoofkBmp[k % 2], ROOF_SIZE_Y, BLOCK_SIZE_Y);
+		m_terrian[k] = CreateTerrian(k * 64, 220 + 64 * (k % 2), STEP_SIZE_X, STEP_SIZE_Y, m_hStepBmp, STEP_SIZE_Y);
 	}
-
 	//创建游戏状态
 	m_gameStatus = CreateGameStatus(0, 0, GAME_STATUS_SIZE_X, GAME_STATUS_SIZE_Y, m_hGameStatusBmp);
-
+	jump_status = 0;
 	//启动计时器
 	//SetTimer(hWnd, TIMER_ID, TIMER_ELAPSE, NULL);
 }
@@ -194,7 +182,7 @@ VOID Render(HWND hWnd)
 	switch (m_gameStatus.situation)
 	{
 	case 0:
-		SelectObject(hdcBmp, m_hStart);
+		SelectObject(hdcBmp, m_hStartBmp);
 		BitBlt(hdcBuffer, 0, 0, WNDWIDTH, WNDHEIGHT,
 			hdcBmp, 0, 0, SRCCOPY);
 		break;
@@ -209,31 +197,6 @@ VOID Render(HWND hWnd)
 		BitBlt(hdcBuffer, 0, 0, WNDWIDTH, WNDHEIGHT,
 			hdcBmp, 0, 0, SRCCOPY);
 
-		//绘制地形
-		int k;
-		for (k = 0; k < MAX_TERRIAN_NUM; ++k)
-		{
-			Terrian terrian = m_terrian[k];
-			SelectObject(hdcBmp, terrian.hRoofBmp);
-			TransparentBlt(
-				hdcBuffer, terrian.pos.x, terrian.pos.y,
-				terrian.roofWidth, terrian.roofHeight,
-				hdcBmp, 0, 0, terrian.roofWidth, terrian.roofHeight,
-				RGB(255, 255, 255)
-				);
-			SelectObject(hdcBmp, terrian.hBlockBmp);
-			int t;
-			for (t = 0; t < terrian.blockNum; ++t)
-			{
-				TransparentBlt(
-					hdcBuffer, terrian.pos.x, terrian.pos.y + terrian.roofHeight + terrian.blockHeight * t,
-					terrian.blockWidth, terrian.blockHeight,
-					hdcBmp, 0, 0, terrian.blockWidth, terrian.blockHeight,
-					RGB(255, 255, 255)
-					);
-			}
-		}
-
 		//绘制Hero到缓存
 		SelectObject(hdcBmp, m_hero.hBmp);
 		TransparentBlt(
@@ -242,6 +205,20 @@ VOID Render(HWND hWnd)
 			hdcBmp, 0, m_hero.size.cy * m_hero.curFrameIndex, m_hero.size.cx, m_hero.size.cy,
 			RGB(255, 255, 255)
 			);
+
+		//绘制地形
+		int k;
+		for (k = 0; k < MAX_TERRIAN_NUM; ++k)
+		{
+			Terrian terrian = m_terrian[k];
+			SelectObject(hdcBmp, terrian.hStepBmp);
+			TransparentBlt(
+				hdcBuffer, terrian.pos.x, terrian.pos.y,
+				terrian.stepWidth, terrian.stepHeight,
+				hdcBmp, 0, 0, terrian.stepWidth, terrian.stepHeight,
+				RGB(255, 255, 255)
+				);
+		}
 
 		//绘制游戏状态
 		//暂停或继续位图
@@ -300,32 +277,39 @@ GameStatus CreateGameStatus(LONG posX, LONG posY, LONG sizeX, LONG sizeY, HBITMA
 }
 
 Terrian CreateTerrian(LONG posX, LONG posY, LONG sizeX, LONG sizeY,
-	HBITMAP hBlockBmp, HBITMAP hRoofBmp, int roofHeight, int blockHeight)
+	HBITMAP hStepBmp, int stepHeight)
 {
 	Terrian terrian;
 	terrian.pos.x = posX;
 	terrian.pos.y = posY;
 	terrian.size.cx = sizeX;
 	terrian.size.cy = sizeY;
-	terrian.hBlockBmp = hBlockBmp;
-	terrian.hRoofBmp = hRoofBmp;
-	terrian.roofWidth = sizeX;
-	terrian.roofHeight = roofHeight;
-	terrian.blockWidth = sizeX;
-	terrian.blockHeight = blockHeight;
-	terrian.blockNum = (int)ceil((sizeY - roofHeight) * 1.0 / blockHeight);
+	terrian.hStepBmp = hStepBmp;
+	terrian.stepWidth = sizeX;
+	terrian.stepHeight = STEP_SIZE_Y;
 	return terrian;
 }
 
 VOID TimerUpdate(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
+	int difficulty, i;
+	if (m_gameStatus.totalDist <= 10000)
+		difficulty = 3;
+	else if (m_gameStatus.totalDist <= 30000)
+		difficulty = 4;
+	else// if (m_gameStatus.totalDist <= 50000)
+		difficulty = 5;
+	
 	HeroUpdate();
-	TerrianUpdate();
-	GameStatusUpdate();
-	TerrianUpdate();
-	GameStatusUpdate();
-	TerrianUpdate();
-	GameStatusUpdate();
+
+	for (i = 1; i <= difficulty; i++)
+	{
+		TerrianUpdate();
+		GameStatusUpdate();
+		ChaseTest();
+		RightCollision();
+	}
+
 	InvalidateRect(hWnd, NULL, FALSE);
 }
 
@@ -396,6 +380,45 @@ BOOL Paused(POINT ptMouse)
 	return PtInRect(&rPause, ptMouse);
 }
 
+void RightCollision()
+{
+	int i;
+	for (i = 0; i < MAX_TERRIAN_NUM; i++)
+	{
+		if (m_hero.pos.y + m_hero.size.cy <= m_terrian[i].pos.y + 4)
+			continue;
+		else if (m_hero.pos.x + m_hero.size.cx>m_terrian[i].pos.x - 2 && m_hero.pos.x + m_hero.size.cx <= m_terrian[i].pos.x)
+		{
+			m_hero.pos.x -= 2;
+			break;
+		}
+	}
+}
+
+void ChaseTest()
+{
+	int i, type;
+	type = 0;
+	if (m_hero.pos.x + m_hero.size.cx < 200)
+	{
+		type = 1;
+		for (i = 0; i < MAX_TERRIAN_NUM; i++)
+		{
+			if (m_hero.pos.y + m_hero.size.cy <= m_terrian[i].pos.y + 4)
+				continue;
+			else if (m_hero.pos.x + m_hero.size.cx>m_terrian[i].pos.x - 2 && m_hero.pos.x + m_hero.size.cx <= m_terrian[i].pos.x)
+			{
+				type = 0;
+				break;
+			}
+		}
+	}
+	if (type == 1)
+	{
+		m_hero.pos.x += 2;
+	}
+}
+
 VOID KeyDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	//TODO
@@ -404,11 +427,19 @@ VOID KeyDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		switch (wParam)
 		{
 		case VK_UP:
-
-			m_hero.pos.y -= 50;
+			m_hero.pos.y -= 64;
+			/*if (jump_status != 2)
+			{
+				if (jump_status == 0)
+				{
+					jump_status++;
+					SetTimer(hWnd, JUMP_TIMER, TIMER_ELAPSE, NULL);
+				}
+			}*/
 			InvalidateRect(hWnd, NULL, FALSE);
 			break;
 		case VK_DOWN:
+			m_hero.pos.y += 1;
 			InvalidateRect(hWnd, NULL, FALSE);
 			break;
 		default:

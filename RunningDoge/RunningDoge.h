@@ -7,21 +7,18 @@
 
 /*定义宏变量，WNDWIDTH、WNDHEIGHT为窗口的宽和高*/
 #define TIMER_ID             1
+#define JUMP_TIMER			 2
 #define TIMER_ELAPSE         20
 #define WNDWIDTH             720
 #define WNDHEIGHT            430
-#define BLOCK_COLOR_NUM      4
-#define ROOF_COLOR_NUM       2
-#define MAX_TERRIAN_NUM      20
+#define MAX_TERRIAN_NUM      12
 
 //定义资源的尺寸         
-#define HERO_SIZE_X          65
-#define HERO_SIZE_Y          49
+#define HERO_SIZE_X          64
+#define HERO_SIZE_Y          50
 #define HERO_MAX_FRAME_NUM   9
-#define ROOF_SIZE_X          65
-#define ROOF_SIZE_Y          33
-#define BLOCK_SIZE_X         65
-#define BLOCK_SIZE_Y         65
+#define STEP_SIZE_X          64
+#define STEP_SIZE_Y          64
 #define GAME_STATUS_SIZE_X   40
 #define GAME_STATUS_SIZE_Y   30
 
@@ -35,18 +32,14 @@ typedef struct
 	int     maxFrameSize;
 }Hero;
 
-/*地形结构体，地形方块位图、屋顶位图、位置、大小、屋顶以及方块大小、方块个数*/
+/*地形结构体，地形方块位图、位置、大小*/
 typedef struct
 {
-	HBITMAP hBlockBmp;
-	HBITMAP hRoofBmp;
+	HBITMAP hStepBmp;
 	POINT	pos;
 	SIZE    size;
-	int     roofWidth;
-	int     roofHeight;
-	int     blockWidth;
-	int     blockHeight;
-	int     blockNum;
+	int     stepWidth;
+	int     stepHeight;
 }Terrian;
 
 /*游戏状态结构体*/
@@ -68,20 +61,15 @@ static TCHAR szTitle[] = _T("奔跑吧！Doge!");
 HBITMAP m_hBackgroundBmp;
 HBITMAP m_hHeroBmp;
 HBITMAP m_hGameStatusBmp;
-HBITMAP	m_hBlockBmp[BLOCK_COLOR_NUM];
-HBITMAP	m_hRoofkBmp[ROOF_COLOR_NUM];
-HBITMAP m_hStart;
+HBITMAP	m_hStepBmp;
+HBITMAP m_hStartBmp;
 HBITMAP m_hStoryStartBmp;
-
-/*定义方块颜色数组，与m_hBlockBmp[BLOCK_COLOR_NUM]个数对应，0表示蓝色方块，1表示绿色方块，2表示橙色方块，3表示粉色方块*/
-int	m_blockBmpNames[] = { IDB_BLUE_BLOCK, IDB_GREEN_BLOCK, IDB_ORANGE_BLOCK, IDB_PINK_BLOCK };
-/*定义屋顶颜色数组，与m_hRoofkBmp[ROOF_COLOR_NUM]个数对应，0表示黑色屋顶，1表示灰色屋顶*/
-int	m_roofBmpNames[] = { IDB_BLACK_ROOF, IDB_GREY_ROOF };
 
 /*声明英雄、地形、游戏状态*/
 Hero          m_hero;
 Terrian       m_terrian[MAX_TERRIAN_NUM];
 GameStatus    m_gameStatus;
+int			  jump_status;
 
 /*全局函数*/
 //窗体过程函数
@@ -114,13 +102,12 @@ Fucntion : 创建单个地形
 Parameter:
 posX、posY表示矩形左上角的坐标
 sizeX、sizeY表示矩形的size
-hBlockBmp表示方块位图句柄
-hRoofBmp表示屋顶位图句柄
+hStepBmp表示方块位图句柄
 roofHeight屋顶宽度和高度
 blockHeight方块宽度和高度
 *************************************************/
 Terrian CreateTerrian(LONG posX, LONG posY, LONG sizeX, LONG sizeY,
-	HBITMAP hBlockBmp, HBITMAP hRoofBmp, int roofHeight, int blockHeight);
+	HBITMAP hStepBmp, int stepHeight);
 
 //双缓冲绘制
 VOID Render(HWND hWnd);
@@ -138,6 +125,10 @@ BOOL Startd(POINT ptMouse);
 BOOL StoryStartd(POINT ptMouse);
 //判断是否点击暂停
 BOOL Paused(POINT ptMouse);
+//右碰撞检测
+void RightCollision();
+//追及检测
+void ChaseTest();
 //键盘按下事件处理
 VOID KeyDown(HWND hWnd, WPARAM wParam, LPARAM lParam);
 //键盘松开事件处理
