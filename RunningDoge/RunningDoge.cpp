@@ -293,15 +293,38 @@ Terrian CreateTerrian(LONG posX, LONG posY, LONG sizeX, LONG sizeY,
 VOID TimerUpdate(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	int difficulty, i;
-	if (m_gameStatus.totalDist <= 10000)
+	if (m_gameStatus.totalDist <= 1000)
 		difficulty = 3;
-	else if (m_gameStatus.totalDist <= 30000)
+	else if (m_gameStatus.totalDist <= 3000)
 		difficulty = 4;
 	else// if (m_gameStatus.totalDist <= 50000)
 		difficulty = 5;
 	
-	HeroUpdate();
-
+	switch (wParam)
+	{
+	case TIMER_ID:
+		HeroUpdate();
+		break;
+	case JUMP_TIMER:
+		if (BeBorn() >= 0)
+		{
+			m_hero.pos.y = m_terrian[BeBorn()].pos.y + 4 - m_hero.size.cy;
+			jump_status = 0;
+			KillTimer(hWnd, JUMP_TIMER);
+			SetTimer(hWnd, TIMER_ID, TIMER_ELAPSE, NULL);
+			break;
+		}
+		if (speed_jump >= 1)
+			m_hero.pos.y -= speed_jump;
+		else if (speed_jump == 0)
+			m_hero.curFrameIndex = 5;
+		else if(speed_jump<=-1)
+			m_hero.pos.y -= speed_jump;
+		speed_jump--;
+		break;
+	default:
+		break;
+	}
 	for (i = 1; i <= difficulty; i++)
 	{
 		TerrianUpdate();
@@ -309,16 +332,11 @@ VOID TimerUpdate(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		ChaseTest();
 		RightCollision();
 	}
-
 	InvalidateRect(hWnd, NULL, FALSE);
 }
 
 VOID HeroUpdate()
 {
-	//TODO
-	//更新位置
-	//m_hero.pos.x += 1;
-	m_hero.pos.x = m_hero.pos.x >= WNDWIDTH ? 0 : m_hero.pos.x;
 	//更新动作
 	++m_hero.curFrameIndex;
 	m_hero.curFrameIndex = m_hero.curFrameIndex >= (m_hero.maxFrameSize - 1) ? 0 : m_hero.curFrameIndex;
@@ -380,6 +398,21 @@ BOOL Paused(POINT ptMouse)
 	return PtInRect(&rPause, ptMouse);
 }
 
+int BeBorn()
+{
+	int i;
+	for (i = 0; i < MAX_TERRIAN_NUM; i++)
+	{
+		if(m_hero.pos.x+m_hero.size.cx>m_terrian[i].pos.x&&m_hero.pos.x<m_terrian[i].pos.x+m_terrian[i].size.cx)
+			if (m_hero.pos.y + m_hero.size.cy >= m_terrian[i].pos.y + 5)
+				break;
+	}
+	if (i == MAX_TERRIAN_NUM)
+		return -1;
+	else
+		return i;
+}
+
 void RightCollision()
 {
 	int i;
@@ -415,7 +448,7 @@ void ChaseTest()
 	}
 	if (type == 1)
 	{
-		m_hero.pos.x += 2;
+		m_hero.pos.x += 1;
 	}
 }
 
@@ -427,15 +460,22 @@ VOID KeyDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		switch (wParam)
 		{
 		case VK_UP:
-			m_hero.pos.y -= 64;
-			/*if (jump_status != 2)
+			if (jump_status != 2)
 			{
+				speed_jump = 12;
 				if (jump_status == 0)
 				{
 					jump_status++;
+					KillTimer(hWnd, TIMER_ID);
 					SetTimer(hWnd, JUMP_TIMER, TIMER_ELAPSE, NULL);
+					m_hero.curFrameIndex = 2;
 				}
-			}*/
+				else if (jump_status == 1)
+				{
+					jump_status++;
+					m_hero.curFrameIndex = 2;
+				}
+			}
 			InvalidateRect(hWnd, NULL, FALSE);
 			break;
 		case VK_DOWN:
@@ -465,7 +505,7 @@ VOID LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	if (StoryStartd(ptMouse) && m_gameStatus.situation == 1)
 	{
 		m_gameStatus.situation = 2;
-		PlaySound(TEXT("res\\sound\\Theme.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+		PlaySound((LPCWSTR)IDR_THEME, NULL, SND_RESOURCE | SND_ASYNC | SND_LOOP);
 		SetTimer(hWnd, TIMER_ID, TIMER_ELAPSE, NULL);
 		InvalidateRect(hWnd, NULL, FALSE);
 	}

@@ -70,6 +70,7 @@ Hero          m_hero;
 Terrian       m_terrian[MAX_TERRIAN_NUM];
 GameStatus    m_gameStatus;
 int			  jump_status;
+int			  speed_jump;
 
 /*全局函数*/
 //窗体过程函数
@@ -125,6 +126,8 @@ BOOL Startd(POINT ptMouse);
 BOOL StoryStartd(POINT ptMouse);
 //判断是否点击暂停
 BOOL Paused(POINT ptMouse);
+//落地判定
+int BeBorn();
 //右碰撞检测
 void RightCollision();
 //追及检测
