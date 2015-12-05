@@ -106,10 +106,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		//键盘按下事件
 		KeyDown(hWnd, wParam, lParam);
 		break;
-	case WM_KEYUP:
-		//键盘松开事件
-		KeyUp(hWnd, wParam, lParam);
-		break;
 	case WM_LBUTTONDOWN:
 		//左鼠标事件
 		LButtonDown(hWnd, wParam, lParam);
@@ -140,10 +136,7 @@ VOID Init(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	//加载背景位图
 	m_hBackgroundBmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
 		MAKEINTRESOURCE(IDB_BACKGROUND));
-	//加载Building位图
-	m_hBuildingBmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
-		MAKEINTRESOURCE(IDB_BUILDING));
-	//加载Building位图
+	//加载英雄位图
 	m_hHeroBmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
 		MAKEINTRESOURCE(IDB_HERODOGE_GRAY));
 	//加载游戏状态位图
@@ -165,7 +158,7 @@ VOID Init(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
 	//创建英雄、建筑
 	m_hero = CreateHero(200, 226, HERO_SIZE_X, HERO_SIZE_Y, m_hHeroBmp, 0, HERO_MAX_FRAME_NUM);
-	m_building = CreateBuilding(0, 100, BUILDING_SIZE_X, BUILDING_SIZE_Y, m_hBuildingBmp);
+	//m_building = CreateBuilding(0, 100, BUILDING_SIZE_X, BUILDING_SIZE_Y, m_hBuildingBmp);
 	//创建地形
 	for (k = 0; k < MAX_TERRIAN_NUM; ++k)
 	{
@@ -215,15 +208,6 @@ VOID Render(HWND hWnd)
 		SelectObject(hdcBmp, m_hBackgroundBmp);
 		BitBlt(hdcBuffer, 0, 0, WNDWIDTH, WNDHEIGHT,
 			hdcBmp, 0, 0, SRCCOPY);
-
-		//绘制建筑到缓存
-		SelectObject(hdcBmp, m_building.hBmp);
-		TransparentBlt(
-			hdcBuffer, m_building.pos.x, m_building.pos.y,
-			m_building.size.cx, m_building.size.cy,
-			hdcBmp, 0, 0, m_building.size.cx, m_building.size.cy,
-			RGB(255, 255, 255)
-			);
 
 		//绘制地形
 		int k;
@@ -301,17 +285,6 @@ Hero CreateHero(LONG posX, LONG posY, LONG sizeX, LONG sizeY, HBITMAP hBmp, int 
 	return hero;
 }
 
-Building CreateBuilding(LONG posX, LONG posY, LONG sizeX, LONG sizeY, HBITMAP hBmp)
-{
-	Building building;
-	building.hBmp = hBmp;
-	building.pos.x = posX;
-	building.pos.y = posY;
-	building.size.cx = sizeX;
-	building.size.cy = sizeY;
-	return building;
-}
-
 GameStatus CreateGameStatus(LONG posX, LONG posY, LONG sizeX, LONG sizeY, HBITMAP hBmp)
 {
 	GameStatus gameStatus;
@@ -348,10 +321,10 @@ VOID TimerUpdate(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	HeroUpdate();
 	TerrianUpdate();
-	TerrianUpdate();
+	GameStatusUpdate();
 	TerrianUpdate();
 	GameStatusUpdate();
-	GameStatusUpdate();
+	TerrianUpdate();
 	GameStatusUpdate();
 	InvalidateRect(hWnd, NULL, FALSE);
 }
@@ -426,34 +399,21 @@ BOOL Paused(POINT ptMouse)
 VOID KeyDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	//TODO
-	switch (wParam)
+	if (m_gameStatus.situation == 2 && m_gameStatus.isPaused == 0)
 	{
-	case VK_UP:
-		m_hero.pos.y -= 50;
-		InvalidateRect(hWnd, NULL, FALSE);
-		break;
-	case VK_DOWN:
-		InvalidateRect(hWnd, NULL, FALSE);
-		break;
-	default:
-		break;
-	}
-}
+		switch (wParam)
+		{
+		case VK_UP:
 
-VOID KeyUp(HWND hWnd, WPARAM wParam, LPARAM lParam)
-{
-	//TODO
-	switch (wParam)
-	{
-	case VK_UP:
-		m_hero.pos.y += 50;
-		InvalidateRect(hWnd, NULL, FALSE);
-		break;
-	case VK_DOWN:
-		InvalidateRect(hWnd, NULL, FALSE);
-		break;
-	default:
-		break;
+			m_hero.pos.y -= 50;
+			InvalidateRect(hWnd, NULL, FALSE);
+			break;
+		case VK_DOWN:
+			InvalidateRect(hWnd, NULL, FALSE);
+			break;
+		default:
+			break;
+		}
 	}
 }
 
@@ -474,6 +434,8 @@ VOID LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	if (StoryStartd(ptMouse) && m_gameStatus.situation == 1)
 	{
 		m_gameStatus.situation = 2;
+		PlaySound(TEXT("res\\sound\\Theme.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+		SetTimer(hWnd, TIMER_ID, TIMER_ELAPSE, NULL);
 		InvalidateRect(hWnd, NULL, FALSE);
 	}
 
