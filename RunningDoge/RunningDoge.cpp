@@ -438,6 +438,18 @@ BOOL StoryStartd(POINT ptMouse)
 	return PtInRect(&rStoryStart, ptMouse);
 }
 
+BOOL Restart(POINT ptMouse)
+{
+	RECT rRestart;
+
+	rRestart.left = 509;
+	rRestart.top = 361;
+	rRestart.right = 650;
+	rRestart.bottom = 378;
+
+	return PtInRect(&rRestart, ptMouse);
+}
+
 BOOL Paused(POINT ptMouse)
 {
 	RECT rPause;
@@ -600,6 +612,34 @@ VOID LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 			SetTimer(hWnd, TIMER_ID, TIMER_ELAPSE, NULL);
 			m_gameStatus.isPaused = FALSE;
 		}
+		InvalidateRect(hWnd, NULL, FALSE);
+	}
+
+	//如果在死亡界面点了GO,执行重新开始
+	if (Restart(ptMouse) && m_gameStatus.situation == 3)
+	{
+		//初始化按钮
+		//创建英雄、建筑
+		m_hero = CreateHero(200, 234, HERO_SIZE_X, HERO_SIZE_Y, m_hHeroBmp, 0, HERO_MAX_FRAME_NUM);
+		//创建地形
+		int k;
+		for (k = 0; k < MAX_TERRIAN_NUM; ++k)
+		{
+			if (k % 4 == 0)
+			{
+				continue;
+			}
+			m_terrian[k] = CreateTerrian(k * 64, 220 + 64 * (k % 2), STEP_SIZE_X, STEP_SIZE_Y, m_hStepBmp, STEP_SIZE_Y);
+		}
+		//创建游戏状态
+		m_gameStatus = CreateGameStatus(0, 0, GAME_STATUS_SIZE_X, GAME_STATUS_SIZE_Y, m_hGameStatusBmp);
+		//人物状态
+		jump_status = 0;
+		down_status = 0;
+
+		m_gameStatus.situation = 2;
+		PlaySound((LPCWSTR)IDR_THEME, NULL, SND_RESOURCE | SND_ASYNC | SND_LOOP);
+		SetTimer(hWnd, TIMER_ID, TIMER_ELAPSE, NULL);
 		InvalidateRect(hWnd, NULL, FALSE);
 	}
 }
