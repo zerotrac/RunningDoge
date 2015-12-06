@@ -1,9 +1,6 @@
 #include "RunningDoge.h"
 
-int WINAPI WinMain(HINSTANCE hInstance,
-	HINSTANCE hPrevInstance,
-	LPSTR lpCmdLine,
-	int nCmdShow)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	WNDCLASSEX wcex;
 	HWND hWnd;
@@ -112,7 +109,47 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_TIMER:
 		//定时器事件
-		TimerUpdate(hWnd, wParam, lParam);
+		switch (wParam)
+		{
+		case TIMER_ID:
+			TimerUpdate(hWnd, wParam, lParam);
+			break;
+		case JUMP_TIMER:
+			if (speed_jump >= 1)
+				m_hero.pos.y -= speed_jump;
+			else if (speed_jump == 0)
+				m_hero.curFrameIndex = 5;
+			else if (speed_jump <= -1)
+				m_hero.pos.y -= speed_jump;
+			speed_jump--;
+			if (BeBorn() >= 0)
+			{
+				m_hero.pos.y = m_terrian[BeBorn()].pos.y - m_hero.size.cy;
+				jump_status = 0;
+				KillTimer(hWnd, JUMP_TIMER);
+				//SetTimer(hWnd, TIMER_ID, TIMER_ELAPSE, NULL);
+			}
+			break;
+		case DOWN_TIMER:
+			if (jump_status!=0)
+			{
+				KillTimer(hWnd, DOWN_TIMER);
+				down_status = 0;
+				break;
+			}
+			m_hero.pos.y -= speed_jump;
+			speed_jump--;
+			if (BeBorn() >= 0)
+			{
+				m_hero.pos.y = m_terrian[BeBorn()].pos.y - m_hero.size.cy;
+				KillTimer(hWnd, DOWN_TIMER);
+				down_status = 0;
+				//SetTimer(hWnd, TIMER_ID, TIMER_ELAPSE, NULL);
+			}
+			break;
+		default:
+			break;
+		}
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -146,7 +183,7 @@ VOID Init(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	m_hStepBmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
 		MAKEINTRESOURCE(IDB_STEP));
 	//创建英雄、建筑
-	m_hero = CreateHero(200, 238, HERO_SIZE_X, HERO_SIZE_Y, m_hHeroBmp, 0, HERO_MAX_FRAME_NUM);
+	m_hero = CreateHero(200, 234, HERO_SIZE_X, HERO_SIZE_Y, m_hHeroBmp, 0, HERO_MAX_FRAME_NUM);
 	//创建地形
 	int k;
 	for (k = 0; k < MAX_TERRIAN_NUM; ++k)
@@ -160,6 +197,7 @@ VOID Init(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	//创建游戏状态
 	m_gameStatus = CreateGameStatus(0, 0, GAME_STATUS_SIZE_X, GAME_STATUS_SIZE_Y, m_hGameStatusBmp);
 	jump_status = 0;
+	down_status = 0;
 	//启动计时器
 	//SetTimer(hWnd, TIMER_ID, TIMER_ELAPSE, NULL);
 }
@@ -232,6 +270,11 @@ VOID Render(HWND hWnd)
 		SetTextColor(hdcBuffer, RGB(0, 0, 0));
 		SetBkMode(hdcBuffer, TRANSPARENT);
 		TextOut(hdcBuffer, WNDWIDTH - 100, 15, szDist, wsprintf(szDist, _T("距离:%d"), m_gameStatus.totalDist));
+
+		TCHAR	refen[20];
+		SetTextColor(hdcBuffer, RGB(0, 0, 0));
+		SetBkMode(hdcBuffer, TRANSPARENT);
+		TextOut(hdcBuffer, WNDWIDTH - 200, 115, refen, wsprintf(refen, _T("速度:%d 位置:%d %d"), speed_jump, m_hero.pos.x, m_hero.pos.y));
 		break;
 	default:
 		break;
@@ -276,8 +319,7 @@ GameStatus CreateGameStatus(LONG posX, LONG posY, LONG sizeX, LONG sizeY, HBITMA
 	return gameStatus;
 }
 
-Terrian CreateTerrian(LONG posX, LONG posY, LONG sizeX, LONG sizeY,
-	HBITMAP hStepBmp, int stepHeight)
+Terrian CreateTerrian(LONG posX, LONG posY, LONG sizeX, LONG sizeY, HBITMAP hStepBmp, int stepHeight)
 {
 	Terrian terrian;
 	terrian.pos.x = posX;
@@ -293,45 +335,30 @@ Terrian CreateTerrian(LONG posX, LONG posY, LONG sizeX, LONG sizeY,
 VOID TimerUpdate(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	int difficulty, i;
-	if (m_gameStatus.totalDist <= 1000)
+	if (m_gameStatus.totalDist <= 10000)
 		difficulty = 3;
-	else if (m_gameStatus.totalDist <= 3000)
+	else if (m_gameStatus.totalDist <= 30000)
 		difficulty = 4;
 	else// if (m_gameStatus.totalDist <= 50000)
 		difficulty = 5;
 	
-	switch (wParam)
+	if (BeBorn()>=0)
 	{
-	case TIMER_ID:
 		HeroUpdate();
-		break;
-	case JUMP_TIMER:
-		if (BeBorn() >= 0)
-		{
-			m_hero.pos.y = m_terrian[BeBorn()].pos.y + 4 - m_hero.size.cy;
-			jump_status = 0;
-			KillTimer(hWnd, JUMP_TIMER);
-			SetTimer(hWnd, TIMER_ID, TIMER_ELAPSE, NULL);
-			break;
-		}
-		if (speed_jump >= 1)
-			m_hero.pos.y -= speed_jump;
-		else if (speed_jump == 0)
-			m_hero.curFrameIndex = 5;
-		else if(speed_jump<=-1)
-			m_hero.pos.y -= speed_jump;
-		speed_jump--;
-		break;
-	default:
-		break;
 	}
+
 	for (i = 1; i <= difficulty; i++)
 	{
 		TerrianUpdate();
 		GameStatusUpdate();
+		DownTest(hWnd);
 		ChaseTest();
 		RightCollision();
 	}
+
+	if (m_hero.pos.y >= 430 || m_hero.pos.x + m_hero.size.cx <= 0)
+		Dead(hWnd);
+
 	InvalidateRect(hWnd, NULL, FALSE);
 }
 
@@ -344,7 +371,6 @@ VOID HeroUpdate()
 
 VOID TerrianUpdate()
 {
-	//TODO
 	int k;
 	for (k = 0; k < MAX_TERRIAN_NUM; ++k)
 	{
@@ -358,7 +384,6 @@ VOID TerrianUpdate()
 
 VOID GameStatusUpdate()
 {
-	//TODO
 	++m_gameStatus.totalDist;
 }
 
@@ -403,8 +428,8 @@ int BeBorn()
 	int i;
 	for (i = 0; i < MAX_TERRIAN_NUM; i++)
 	{
-		if(m_hero.pos.x+m_hero.size.cx>m_terrian[i].pos.x&&m_hero.pos.x<m_terrian[i].pos.x+m_terrian[i].size.cx)
-			if (m_hero.pos.y + m_hero.size.cy >= m_terrian[i].pos.y + 5)
+		if(m_hero.pos.x + m_hero.size.cx > m_terrian[i].pos.x && m_hero.pos.x < m_terrian[i].pos.x + m_terrian[i].size.cx)
+			if (m_hero.pos.y + m_hero.size.cy >= m_terrian[i].pos.y)
 				break;
 	}
 	if (i == MAX_TERRIAN_NUM)
@@ -418,7 +443,7 @@ void RightCollision()
 	int i;
 	for (i = 0; i < MAX_TERRIAN_NUM; i++)
 	{
-		if (m_hero.pos.y + m_hero.size.cy <= m_terrian[i].pos.y + 4)
+		if (m_hero.pos.y + m_hero.size.cy <= m_terrian[i].pos.y)
 			continue;
 		else if (m_hero.pos.x + m_hero.size.cx>m_terrian[i].pos.x - 2 && m_hero.pos.x + m_hero.size.cx <= m_terrian[i].pos.x)
 		{
@@ -432,12 +457,12 @@ void ChaseTest()
 {
 	int i, type;
 	type = 0;
-	if (m_hero.pos.x + m_hero.size.cx < 200)
+	if (m_hero.pos.x < 200)
 	{
 		type = 1;
 		for (i = 0; i < MAX_TERRIAN_NUM; i++)
 		{
-			if (m_hero.pos.y + m_hero.size.cy <= m_terrian[i].pos.y + 4)
+			if (m_hero.pos.y + m_hero.size.cy <= m_terrian[i].pos.y)
 				continue;
 			else if (m_hero.pos.x + m_hero.size.cx>m_terrian[i].pos.x - 2 && m_hero.pos.x + m_hero.size.cx <= m_terrian[i].pos.x)
 			{
@@ -450,6 +475,31 @@ void ChaseTest()
 	{
 		m_hero.pos.x += 1;
 	}
+}
+
+void DownTest(HWND hWnd)
+{
+	if (BeBorn() == -1 && jump_status == 0)
+	{
+		if (down_status==0)
+		{
+			down_status++;
+			speed_jump = 0;
+			m_hero.curFrameIndex = 5;
+			//KillTimer(hWnd, TIMER_ID);
+			SetTimer(hWnd, DOWN_TIMER, TIMER_ELAPSE, NULL);
+		}
+	}
+}
+
+void Dead(HWND hWnd)
+{
+	m_gameStatus.situation++;
+	if (jump_status != 0)
+		KillTimer(hWnd, JUMP_TIMER);
+	else if (down_status = 1)
+		KillTimer(hWnd, DOWN_TIMER);
+	KillTimer(hWnd, TIMER_ID);
 }
 
 VOID KeyDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
@@ -466,7 +516,7 @@ VOID KeyDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 				if (jump_status == 0)
 				{
 					jump_status++;
-					KillTimer(hWnd, TIMER_ID);
+					//KillTimer(hWnd, TIMER_ID);
 					SetTimer(hWnd, JUMP_TIMER, TIMER_ELAPSE, NULL);
 					m_hero.curFrameIndex = 2;
 				}

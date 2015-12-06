@@ -8,13 +8,14 @@
 /*定义宏变量，WNDWIDTH、WNDHEIGHT为窗口的宽和高*/
 #define TIMER_ID             1
 #define JUMP_TIMER			 2
+#define DOWN_TIMER			 3
 #define TIMER_ELAPSE         20
 #define WNDWIDTH             720
 #define WNDHEIGHT            430
 #define MAX_TERRIAN_NUM      12
 
 //定义资源的尺寸         
-#define HERO_SIZE_X          64
+#define HERO_SIZE_X          53
 #define HERO_SIZE_Y          50
 #define HERO_MAX_FRAME_NUM   9
 #define STEP_SIZE_X          64
@@ -70,6 +71,7 @@ Hero          m_hero;
 Terrian       m_terrian[MAX_TERRIAN_NUM];
 GameStatus    m_gameStatus;
 int			  jump_status;
+int			  down_status;
 int			  speed_jump;
 
 /*全局函数*/
@@ -132,6 +134,10 @@ int BeBorn();
 void RightCollision();
 //追及检测
 void ChaseTest();
+//落地检测
+void DownTest(HWND hWnd);
+//死亡处理
+void Dead(HWND hWnd);
 //键盘按下事件处理
 VOID KeyDown(HWND hWnd, WPARAM wParam, LPARAM lParam);
 //键盘松开事件处理
