@@ -153,6 +153,7 @@
     <ResourceCompile Include="RunningDoge.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\ui\again.bmp" />
     <Image Include="res\ui\background.bmp" />
     <Image Include="res\ui\doge.ico" />
     <Image Include="res\ui\game_status.bmp" />

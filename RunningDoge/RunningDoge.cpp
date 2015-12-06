@@ -182,6 +182,9 @@ VOID Init(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	//加载地形块位图
 	m_hStepBmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
 		MAKEINTRESOURCE(IDB_STEP));
+	//加载死亡画面
+	m_hDeadBmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
+		MAKEINTRESOURCE(IDB_DEAD));
 	//创建英雄、建筑
 	m_hero = CreateHero(200, 234, HERO_SIZE_X, HERO_SIZE_Y, m_hHeroBmp, 0, HERO_MAX_FRAME_NUM);
 	//创建地形
@@ -196,6 +199,8 @@ VOID Init(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	}
 	//创建游戏状态
 	m_gameStatus = CreateGameStatus(0, 0, GAME_STATUS_SIZE_X, GAME_STATUS_SIZE_Y, m_hGameStatusBmp);
+
+	//人物状态
 	jump_status = 0;
 	down_status = 0;
 	//启动计时器
@@ -265,16 +270,36 @@ VOID Render(HWND hWnd)
 			hdcBmp, 0, m_gameStatus.size.cy * m_gameStatus.isPaused,
 			m_gameStatus.size.cx, m_gameStatus.size.cy, RGB(255, 255, 255));
 
-		//绘制分数
+		//绘制距离及分数
 		TCHAR	szDist[13];
 		SetTextColor(hdcBuffer, RGB(0, 0, 0));
 		SetBkMode(hdcBuffer, TRANSPARENT);
 		TextOut(hdcBuffer, WNDWIDTH - 100, 15, szDist, wsprintf(szDist, _T("距离:%d"), m_gameStatus.totalDist));
 
+		TCHAR	szPoint[13];
+		SetTextColor(hdcBuffer, RGB(0, 0, 0));
+		SetBkMode(hdcBuffer, TRANSPARENT);
+		TextOut(hdcBuffer, WNDWIDTH - 100, 30, szPoint, wsprintf(szPoint, _T("分数:%d"), m_gameStatus.totalPoint));
+
 		TCHAR	refen[20];
 		SetTextColor(hdcBuffer, RGB(0, 0, 0));
 		SetBkMode(hdcBuffer, TRANSPARENT);
 		TextOut(hdcBuffer, WNDWIDTH - 200, 115, refen, wsprintf(refen, _T("速度:%d 位置:%d %d"), speed_jump, m_hero.pos.x, m_hero.pos.y));
+		break;
+	case 3:
+		SelectObject(hdcBmp, m_hDeadBmp);
+		BitBlt(hdcBuffer, 0, 0, WNDWIDTH, WNDHEIGHT,
+			hdcBmp, 0, 0, SRCCOPY);
+
+		TCHAR	szFinalDist[13];
+		SetTextColor(hdcBuffer, RGB(255, 255, 255));
+		SetBkMode(hdcBuffer, TRANSPARENT);
+		TextOut(hdcBuffer, 100, 30, szFinalDist, wsprintf(szFinalDist, _T("最终距离:%d"), m_gameStatus.totalDist));
+
+		TCHAR   szFinalPoint[13];
+		SetTextColor(hdcBuffer, RGB(255, 255, 255));
+		SetBkMode(hdcBuffer, TRANSPARENT);
+		TextOut(hdcBuffer, 100, 45, szFinalPoint, wsprintf(szFinalPoint, _T("最终分数:%d"), m_gameStatus.totalPoint));
 		break;
 	default:
 		break;
@@ -314,6 +339,7 @@ GameStatus CreateGameStatus(LONG posX, LONG posY, LONG sizeX, LONG sizeY, HBITMA
 	gameStatus.size.cy = sizeY;
 	gameStatus.hBmp = hBmp;
 	gameStatus.totalDist = 0;
+	gameStatus.totalPoint = 0;
 	gameStatus.isPaused = false;
 	gameStatus.situation = 0;
 	return gameStatus;
@@ -385,6 +411,7 @@ VOID TerrianUpdate()
 VOID GameStatusUpdate()
 {
 	++m_gameStatus.totalDist;
+	m_gameStatus.totalPoint += 2;
 }
 
 BOOL Startd(POINT ptMouse)

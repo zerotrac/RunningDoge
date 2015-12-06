@@ -51,6 +51,7 @@ typedef struct
 	SIZE	size;
 	BOOL	isPaused;
 	int     totalDist;
+	int     totalPoint;
 	int		situation;
 }GameStatus;
 
@@ -65,6 +66,7 @@ HBITMAP m_hGameStatusBmp;
 HBITMAP	m_hStepBmp;
 HBITMAP m_hStartBmp;
 HBITMAP m_hStoryStartBmp;
+HBITMAP m_hDeadBmp;
 
 /*声明英雄、地形、游戏状态*/
 Hero          m_hero;
