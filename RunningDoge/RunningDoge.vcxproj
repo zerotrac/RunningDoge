@@ -166,6 +166,7 @@
     <ClCompile Include="RunningDoge.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Media Include="res\sound\herodie.wav" />
     <Media Include="res\sound\Theme.wav" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -62,5 +62,8 @@
     <Media Include="res\sound\Theme.wav">
       <Filter>资源文件</Filter>
     </Media>
+    <Media Include="res\sound\herodie.wav">
+      <Filter>资源文件</Filter>
+    </Media>
   </ItemGroup>
 </Project>

@@ -539,6 +539,7 @@ void Dead(HWND hWnd)
 	else if (down_status = 1)
 		KillTimer(hWnd, DOWN_TIMER);
 	KillTimer(hWnd, TIMER_ID);
+	PlaySound((LPCWSTR)IDR_DEAD, NULL, SND_RESOURCE | SND_ASYNC);
 }
 
 VOID KeyDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
