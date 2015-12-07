@@ -3,6 +3,7 @@
 #include <string.h>
 #include <tchar.h>
 #include <math.h>
+#include <time.h>
 #include "resource.h"
 
 /*定义宏变量，WNDWIDTH、WNDHEIGHT为窗口的宽和高*/
@@ -12,7 +13,7 @@
 #define TIMER_ELAPSE         20
 #define WNDWIDTH             720
 #define WNDHEIGHT            430
-#define MAX_TERRIAN_NUM      12
+#define MAX_TERRIAN_NUM      24
 
 //定义资源的尺寸         
 #define HERO_SIZE_X          53
@@ -75,6 +76,31 @@ GameStatus    m_gameStatus;
 int			  jump_status;
 int			  down_status;
 int			  speed_jump;
+int			  terriantype[24][5] = { 0, 0, 0, 0, 0, 
+									 5, 0, 0, 0, 5,
+									 3, 0, 0, 0, 3,
+									 1, 0, 0, 0, 1,
+									 5, 0, 0, 0, 0,
+									 3, 0, 0, 0, 0,
+									 1, 0, 0, 0, 0,
+									 0, 0, 0, 5, 5,
+									 0, 0, 0, 3, 3,
+									 0, 0, 0, 1, 1,
+									 0, 5, 5, 5, 5,
+									 0, 3, 3, 3, 3,
+									 0, 1, 1, 1, 1,
+									 0, 5, 4, 3, 3,
+									 0, 3, 2, 1, 1,
+									 5, 4, 3, 5, 5,
+									 3, 2, 1, 3, 3,
+									 3, 0, 0, 0, 5,
+									 1, 0, 0, 0, 3,
+									 3, 5, 0, 0, 3,
+									 1, 3, 0, 0, 1,
+									 5, 5, 5, 5, 5, 
+									 3, 3, 3, 3, 3, 
+									 1, 1, 1, 1, 1 };
+int			  terriansituation;
 
 /*全局函数*/
 //窗体过程函数
@@ -142,9 +168,9 @@ void ChaseTest();
 void DownTest(HWND hWnd);
 //死亡处理
 void Dead(HWND hWnd);
+//随机地形
+void RandTerrian();
 //键盘按下事件处理
 VOID KeyDown(HWND hWnd, WPARAM wParam, LPARAM lParam);
-//键盘松开事件处理
-VOID KeyUp(HWND hWnd, WPARAM wParam, LPARAM lParam);
 //左鼠标点击事件
 VOID LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam);

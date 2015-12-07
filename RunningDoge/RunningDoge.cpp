@@ -186,16 +186,12 @@ VOID Init(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	m_hDeadBmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
 		MAKEINTRESOURCE(IDB_DEAD));
 	//创建英雄、建筑
-	m_hero = CreateHero(200, 234, HERO_SIZE_X, HERO_SIZE_Y, m_hHeroBmp, 0, HERO_MAX_FRAME_NUM);
+	m_hero = CreateHero(200, 170, HERO_SIZE_X, HERO_SIZE_Y, m_hHeroBmp, 0, HERO_MAX_FRAME_NUM);
 	//创建地形
 	int k;
 	for (k = 0; k < MAX_TERRIAN_NUM; ++k)
 	{
-		if (k % 4 == 0)
-		{
-			continue;
-		}
-		m_terrian[k] = CreateTerrian(k * 64, 220 + 64 * (k % 2), STEP_SIZE_X, STEP_SIZE_Y, m_hStepBmp, STEP_SIZE_Y);
+		m_terrian[k] = CreateTerrian(k * 64, 220, STEP_SIZE_X, STEP_SIZE_Y, m_hStepBmp, STEP_SIZE_Y);
 	}
 	//创建游戏状态
 	m_gameStatus = CreateGameStatus(0, 0, GAME_STATUS_SIZE_X, GAME_STATUS_SIZE_Y, m_hGameStatusBmp);
@@ -203,6 +199,7 @@ VOID Init(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	//人物状态
 	jump_status = 0;
 	down_status = 0;
+	terriansituation = 11;
 	//启动计时器
 	//SetTimer(hWnd, TIMER_ID, TIMER_ELAPSE, NULL);
 }
@@ -397,13 +394,26 @@ VOID HeroUpdate()
 
 VOID TerrianUpdate()
 {
-	int k;
+	int k, i, j;
 	for (k = 0; k < MAX_TERRIAN_NUM; ++k)
 	{
 		m_terrian[k].pos.x -= 2;
-		if (m_terrian[k].pos.x + m_terrian[k].size.cx < 0)
+		if (m_terrian[k].pos.x + m_terrian[k].size.cx < 4 * m_terrian[k].size.cx)
 		{
-			m_terrian[k].pos.x += MAX_TERRIAN_NUM * m_terrian[k].size.cx;
+			Terrian	temp_terrian[5];
+			RandTerrian();
+			for (j = 0; j < 5;j++)
+			{
+				temp_terrian[i] = CreateTerrian((MAX_TERRIAN_NUM - 5 + j) * 64, 28 + terriantype[terriansituation][j], STEP_SIZE_X, STEP_SIZE_Y, m_hStepBmp, STEP_SIZE_Y);
+			}
+
+			for (i = k, j = 0; i <= k + 4; i++, j++)
+			{
+				if (i >= MAX_TERRIAN_NUM)
+					i -= MAX_TERRIAN_NUM;
+				m_terrian[i].pos.x = temp_terrian[j].pos.x;
+				m_terrian[i].pos.y = temp_terrian[j].pos.y;
+			}
 		}
 	}
 }
@@ -542,6 +552,197 @@ void Dead(HWND hWnd)
 	PlaySound((LPCWSTR)IDR_DEAD, NULL, SND_RESOURCE | SND_ASYNC);
 }
 
+void RandTerrian()
+{
+	srand((unsigned)time(NULL));
+	switch (terriansituation)
+	{
+	case 4:
+		if (m_gameStatus.totalDist <= 10000)
+		{
+			switch (rand() % 2)
+			{
+			case 0:
+				terriansituation = 10;
+				break;
+			case 1:
+				terriansituation = 13;
+				break;
+			}
+		}
+		else
+		{
+			switch (rand() % 3)
+			{
+			case 0:
+				terriansituation = 7;
+				break;
+			case 1:
+				terriansituation = 10;
+				break;
+			case 2:
+				terriansituation = 13;
+				break;
+			}
+		}
+		break;
+	case 5:
+		if (m_gameStatus.totalDist <= 10000)
+		{
+			switch (rand() % 2)
+			{
+			case 0:
+				terriansituation = 11;
+				break;
+			case 1:
+				terriansituation = 14;
+				break;
+			}
+		}
+		else
+		{
+			switch (rand() % 3)
+			{
+			case 0:
+				terriansituation = 8;
+				break;
+			case 1:
+				terriansituation = 11;
+				break;
+			case 2:
+				terriansituation = 14;
+				break;
+			}
+		}
+		break;
+	case 6:
+		if (m_gameStatus.totalDist <= 10000)
+			terriansituation = 12;
+		else
+		{
+			switch (rand() % 2)
+			{
+			case 0:
+				terriansituation = 9;
+				break;
+			case 1:
+				terriansituation = 12;
+				break;
+			}
+		}
+		break;
+	case 1:
+	case 7:
+	case 10:
+	case 15:
+	case 17:
+	case 21:
+		switch (rand() % 7)
+		{
+		case 0:
+			terriansituation = 1;
+			break;
+		case 1:
+			terriansituation = 4;
+			break;
+		case 2:
+			terriansituation = 7;
+			break;
+		case 3:
+			terriansituation = 10;
+			break;
+		case 4:
+			terriansituation = 13;
+			break;
+		case 5:
+			terriansituation = 15;
+			break;
+		case 6:
+			terriansituation = 21;
+			break;
+		default:
+			break;
+		}
+		break;
+	case 2:
+	case 8:
+	case 11:
+	case 13:
+	case 16:
+	case 18:
+	case 19:
+	case 22:
+		switch (rand() % 9)
+		{
+		case 0:
+			terriansituation = 2;
+			break;
+		case 1:
+			terriansituation = 5;
+			break;
+		case 2:
+			terriansituation = 8;
+			break;
+		case 3:
+			terriansituation = 11;
+			break;
+		case 4:
+			terriansituation = 14;
+			break;
+		case 5:
+			terriansituation = 16;
+			break;
+		case 6:
+			terriansituation = 17;
+			break;
+		case 7:
+			terriansituation = 19;
+			break;
+		case 8:
+			terriansituation = 22;
+			break;
+		default:
+			break;
+		}
+		break;
+	case 3:
+	case 9:
+	case 12:
+	case 14:
+	case 20:
+	case 23:
+		switch (rand() % 7)
+		{
+		case 0:
+			terriansituation = 3;
+			break;
+		case 1:
+			terriansituation = 6;
+			break;
+		case 2:
+			terriansituation = 9;
+			break;
+		case 3:
+			terriansituation = 12;
+			break;
+		case 4:
+			terriansituation = 18;
+			break;
+		case 5:
+			terriansituation = 20;
+			break;
+		case 6:
+			terriansituation = 23;
+			break;
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
+	}
+}
+
 VOID KeyDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	//TODO
@@ -621,22 +822,19 @@ VOID LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	{
 		//初始化按钮
 		//创建英雄、建筑
-		m_hero = CreateHero(200, 234, HERO_SIZE_X, HERO_SIZE_Y, m_hHeroBmp, 0, HERO_MAX_FRAME_NUM);
+		m_hero = CreateHero(200, 170, HERO_SIZE_X, HERO_SIZE_Y, m_hHeroBmp, 0, HERO_MAX_FRAME_NUM);
 		//创建地形
 		int k;
 		for (k = 0; k < MAX_TERRIAN_NUM; ++k)
 		{
-			if (k % 4 == 0)
-			{
-				continue;
-			}
-			m_terrian[k] = CreateTerrian(k * 64, 220 + 64 * (k % 2), STEP_SIZE_X, STEP_SIZE_Y, m_hStepBmp, STEP_SIZE_Y);
+			m_terrian[k] = CreateTerrian(k * 64, 220, STEP_SIZE_X, STEP_SIZE_Y, m_hStepBmp, STEP_SIZE_Y);
 		}
 		//创建游戏状态
 		m_gameStatus = CreateGameStatus(0, 0, GAME_STATUS_SIZE_X, GAME_STATUS_SIZE_Y, m_hGameStatusBmp);
 		//人物状态
 		jump_status = 0;
 		down_status = 0;
+		terriansituation = 11;
 
 		m_gameStatus.situation = 2;
 		PlaySound((LPCWSTR)IDR_THEME, NULL, SND_RESOURCE | SND_ASYNC | SND_LOOP);
