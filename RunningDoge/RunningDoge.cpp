@@ -281,7 +281,21 @@ VOID Render(HWND hWnd)
 		TCHAR	refen[20];
 		SetTextColor(hdcBuffer, RGB(0, 0, 0));
 		SetBkMode(hdcBuffer, TRANSPARENT);
-		TextOut(hdcBuffer, WNDWIDTH - 200, 115, refen, wsprintf(refen, _T("速度:%d 位置:%d %d"), speed_jump, m_hero.pos.x, m_hero.pos.y));
+		TextOut(hdcBuffer, WNDWIDTH - 200, 115, refen, wsprintf(refen, _T("速度:%d位置:%d %d"), speed_jump, m_hero.pos.x, m_hero.pos.y));
+
+		TCHAR	refen2[20];
+		SetTextColor(hdcBuffer, RGB(0, 0, 0));
+		SetBkMode(hdcBuffer, TRANSPARENT);
+		TextOut(hdcBuffer, WNDWIDTH - 200, 130, refen2, wsprintf(refen2, _T("%d"), terriansituation));
+
+		int i;
+		TCHAR   pos[24][10];
+		for (i = 0; i < 24;i++)
+		{
+			SetTextColor(hdcBuffer, RGB(255, 0, 0));
+			SetBkMode(hdcBuffer, TRANSPARENT);
+			TextOut(hdcBuffer, WNDWIDTH - 300, i * 15, pos[i], wsprintf(pos[i], _T("%d  %d"), m_terrian[i].pos.x, m_terrian[i].pos.y));
+		}
 		break;
 	case 3:
 		SelectObject(hdcBmp, m_hDeadBmp);
@@ -358,9 +372,9 @@ Terrian CreateTerrian(LONG posX, LONG posY, LONG sizeX, LONG sizeY, HBITMAP hSte
 VOID TimerUpdate(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	int difficulty, i;
-	if (m_gameStatus.totalDist <= 10000)
+	if (m_gameStatus.totalDist <= 1000)
 		difficulty = 3;
-	else if (m_gameStatus.totalDist <= 30000)
+	else if (m_gameStatus.totalDist <= 3000)
 		difficulty = 4;
 	else// if (m_gameStatus.totalDist <= 50000)
 		difficulty = 5;
@@ -398,21 +412,37 @@ VOID TerrianUpdate()
 	for (k = 0; k < MAX_TERRIAN_NUM; ++k)
 	{
 		m_terrian[k].pos.x -= 2;
-		if (m_terrian[k].pos.x + m_terrian[k].size.cx < 4 * m_terrian[k].size.cx)
+	}
+	
+	for (k = 0; k < MAX_TERRIAN_NUM; ++k)
+	{
+		if (m_terrian[k].pos.x + m_terrian[k].size.cx <= -4 * m_terrian[k].size.cx)
 		{
 			Terrian	temp_terrian[5];
 			RandTerrian();
+			int temp[5];
+			for (j = 0; j < 5; j++)
+				temp[j] = terriantype[terriansituation][j];
 			for (j = 0; j < 5;j++)
 			{
-				temp_terrian[i] = CreateTerrian((MAX_TERRIAN_NUM - 5 + j) * 64, 28 + terriantype[terriansituation][j], STEP_SIZE_X, STEP_SIZE_Y, m_hStepBmp, STEP_SIZE_Y);
+				if (temp[j] == 0)
+					temp[j] = 7;
+				temp_terrian[j] = CreateTerrian((MAX_TERRIAN_NUM - 5 + j) * 64, 28 + 64 * temp[j], STEP_SIZE_X, STEP_SIZE_Y, m_hStepBmp, STEP_SIZE_Y);
 			}
 
 			for (i = k, j = 0; i <= k + 4; i++, j++)
 			{
 				if (i >= MAX_TERRIAN_NUM)
-					i -= MAX_TERRIAN_NUM;
-				m_terrian[i].pos.x = temp_terrian[j].pos.x;
-				m_terrian[i].pos.y = temp_terrian[j].pos.y;
+				{
+					m_terrian[i - MAX_TERRIAN_NUM].pos.x = temp_terrian[j].pos.x;
+					m_terrian[i - MAX_TERRIAN_NUM].pos.y = temp_terrian[j].pos.y;
+				}
+				else
+				{
+					m_terrian[i].pos.x = temp_terrian[j].pos.x;
+					m_terrian[i].pos.y = temp_terrian[j].pos.y;
+				}
+
 			}
 		}
 	}
@@ -558,7 +588,7 @@ void RandTerrian()
 	switch (terriansituation)
 	{
 	case 4:
-		if (m_gameStatus.totalDist <= 10000)
+		if (m_gameStatus.totalDist <= 1000)
 		{
 			switch (rand() % 2)
 			{
@@ -587,7 +617,7 @@ void RandTerrian()
 		}
 		break;
 	case 5:
-		if (m_gameStatus.totalDist <= 10000)
+		if (m_gameStatus.totalDist <= 1000)
 		{
 			switch (rand() % 2)
 			{
@@ -616,7 +646,7 @@ void RandTerrian()
 		}
 		break;
 	case 6:
-		if (m_gameStatus.totalDist <= 10000)
+		if (m_gameStatus.totalDist <= 1000)
 			terriansituation = 12;
 		else
 		{
@@ -757,7 +787,6 @@ VOID KeyDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 				if (jump_status == 0)
 				{
 					jump_status++;
-					//KillTimer(hWnd, TIMER_ID);
 					SetTimer(hWnd, JUMP_TIMER, TIMER_ELAPSE, NULL);
 					m_hero.curFrameIndex = 2;
 				}
