@@ -112,6 +112,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch (wParam)
 		{
 		case TIMER_ID:
+			if (m_gameStatus.totalDist > 5000 && m_gameStatus.situation == 2)
+				BossStart(hWnd);
+			if (m_gameStatus.totalDist > 8000 && m_gameStatus.situation == 9)
+				BossStart(hWnd);
+
+
 			TimerUpdate(hWnd, wParam, lParam);
 			break;
 		case JUMP_TIMER:
@@ -144,7 +150,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				m_hero.pos.y = m_terrian[BeBorn()].pos.y - m_hero.size.cy;
 				KillTimer(hWnd, DOWN_TIMER);
 				down_status = 0;
-				//SetTimer(hWnd, TIMER_ID, TIMER_ELAPSE, NULL);
 			}
 			break;
 		default:
@@ -185,8 +190,29 @@ VOID Init(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	//加载死亡画面
 	m_hDeadBmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
 		MAKEINTRESOURCE(IDB_DEAD));
+	//加载BOSS关卡PPT及结束界面
+	m_hBoss1Bmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
+		MAKEINTRESOURCE(IDB_BOSS1));
+	m_hBoss2Bmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
+		MAKEINTRESOURCE(IDB_BOSS2));
+	m_hBoss3Bmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
+		MAKEINTRESOURCE(IDB_BOSS3));
+	m_hBoss4Bmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
+		MAKEINTRESOURCE(IDB_BOSS4));
+	m_hBoss5Bmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
+		MAKEINTRESOURCE(IDB_BOSS5));
+	m_hBoss6Bmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
+		MAKEINTRESOURCE(IDB_BOSS6));
+	m_hBoss7Bmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
+		MAKEINTRESOURCE(IDB_BOSS7));
+	m_hBoss8Bmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
+		MAKEINTRESOURCE(IDB_BOSS8));
+	m_hStoryEndBmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
+		MAKEINTRESOURCE(IDB_STORYEND));
+	m_hEndBmp = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance,
+		MAKEINTRESOURCE(IDB_END));
 	//创建英雄、建筑
-	m_hero = CreateHero(200, 170, HERO_SIZE_X, HERO_SIZE_Y, m_hHeroBmp, 0, HERO_MAX_FRAME_NUM);
+	m_hero = CreateHero(-52, 170, HERO_SIZE_X, HERO_SIZE_Y, m_hHeroBmp, 0, HERO_MAX_FRAME_NUM);
 	//创建地形
 	int k;
 	for (k = 0; k < MAX_TERRIAN_NUM; ++k)
@@ -195,6 +221,8 @@ VOID Init(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	}
 	//创建游戏状态
 	m_gameStatus = CreateGameStatus(0, 0, GAME_STATUS_SIZE_X, GAME_STATUS_SIZE_Y, m_hGameStatusBmp);
+	m_gameStatus.totalDist = 0;
+	m_gameStatus.totalPoint = 0;
 
 	//人物状态
 	jump_status = 0;
@@ -232,6 +260,7 @@ VOID Render(HWND hWnd)
 			hdcBmp, 0, 0, SRCCOPY);
 		break;
 	case 2:
+	case 9:
 		//绘制背景到缓存
 		SelectObject(hdcBmp, m_hBackgroundBmp);
 		BitBlt(hdcBuffer, 0, 0, WNDWIDTH, WNDHEIGHT,
@@ -268,7 +297,7 @@ VOID Render(HWND hWnd)
 			m_gameStatus.size.cx, m_gameStatus.size.cy, RGB(255, 255, 255));
 
 		//绘制距离及分数
-		TCHAR	szDist[13];
+		TCHAR	szDist[13];//有问题
 		SetTextColor(hdcBuffer, RGB(0, 0, 0));
 		SetBkMode(hdcBuffer, TRANSPARENT);
 		TextOut(hdcBuffer, WNDWIDTH - 100, 15, szDist, wsprintf(szDist, _T("距离:%d"), m_gameStatus.totalDist));
@@ -312,6 +341,66 @@ VOID Render(HWND hWnd)
 		SetBkMode(hdcBuffer, TRANSPARENT);
 		TextOut(hdcBuffer, 100, 45, szFinalPoint, wsprintf(szFinalPoint, _T("最终分数:%d"), m_gameStatus.totalPoint));
 		break;
+	case 4:
+		SelectObject(hdcBmp, m_hBoss1Bmp);
+		BitBlt(hdcBuffer, 0, 0, WNDWIDTH, WNDHEIGHT,
+			hdcBmp, 0, 0, SRCCOPY);
+		break;
+	case 5:
+		SelectObject(hdcBmp, m_hBoss2Bmp);
+		BitBlt(hdcBuffer, 0, 0, WNDWIDTH, WNDHEIGHT,
+			hdcBmp, 0, 0, SRCCOPY);
+		break;
+	case 6:
+		SelectObject(hdcBmp, m_hBoss3Bmp);
+		BitBlt(hdcBuffer, 0, 0, WNDWIDTH, WNDHEIGHT,
+			hdcBmp, 0, 0, SRCCOPY);
+		break;
+	case 7:
+		SelectObject(hdcBmp, m_hBoss4Bmp);
+		BitBlt(hdcBuffer, 0, 0, WNDWIDTH, WNDHEIGHT,
+			hdcBmp, 0, 0, SRCCOPY);
+		break;
+	case 8:
+		SelectObject(hdcBmp, m_hBoss5Bmp);
+		BitBlt(hdcBuffer, 0, 0, WNDWIDTH, WNDHEIGHT,
+			hdcBmp, 0, 0, SRCCOPY);
+		break;
+	case 10:
+		SelectObject(hdcBmp, m_hBoss6Bmp);
+		BitBlt(hdcBuffer, 0, 0, WNDWIDTH, WNDHEIGHT,
+			hdcBmp, 0, 0, SRCCOPY);
+		break;
+	case 11:
+		SelectObject(hdcBmp, m_hBoss7Bmp);
+		BitBlt(hdcBuffer, 0, 0, WNDWIDTH, WNDHEIGHT,
+			hdcBmp, 0, 0, SRCCOPY);
+		break;
+	case 12:
+		SelectObject(hdcBmp, m_hBoss8Bmp);
+		BitBlt(hdcBuffer, 0, 0, WNDWIDTH, WNDHEIGHT,
+			hdcBmp, 0, 0, SRCCOPY);
+		break;
+	case 13:
+		SelectObject(hdcBmp, m_hStoryEndBmp);
+		BitBlt(hdcBuffer, 0, 0, WNDWIDTH, WNDHEIGHT,
+			hdcBmp, 0, 0, SRCCOPY);
+		break;
+	case 14:
+		SelectObject(hdcBmp, m_hEndBmp);
+		BitBlt(hdcBuffer, 0, 0, WNDWIDTH, WNDHEIGHT,
+			hdcBmp, 0, 0, SRCCOPY);
+
+		TCHAR	szFinalDist0[13];
+		SetTextColor(hdcBuffer, RGB(255, 255, 255));
+		SetBkMode(hdcBuffer, TRANSPARENT);
+		TextOut(hdcBuffer, 100, 30, szFinalDist0, wsprintf(szFinalDist0, _T("最终距离:%d"), m_gameStatus.totalDist));
+
+		TCHAR   szFinalPoint0[13];
+		SetTextColor(hdcBuffer, RGB(255, 255, 255));
+		SetBkMode(hdcBuffer, TRANSPARENT);
+		TextOut(hdcBuffer, 100, 45, szFinalPoint0, wsprintf(szFinalPoint0, _T("最终分数:%d"), m_gameStatus.totalPoint));
+		break;
 	default:
 		break;
 	}
@@ -349,8 +438,6 @@ GameStatus CreateGameStatus(LONG posX, LONG posY, LONG sizeX, LONG sizeY, HBITMA
 	gameStatus.size.cx = sizeX;
 	gameStatus.size.cy = sizeY;
 	gameStatus.hBmp = hBmp;
-	gameStatus.totalDist = 0;
-	gameStatus.totalPoint = 0;
 	gameStatus.isPaused = false;
 	gameStatus.situation = 0;
 	return gameStatus;
@@ -371,12 +458,12 @@ Terrian CreateTerrian(LONG posX, LONG posY, LONG sizeX, LONG sizeY, HBITMAP hSte
 
 VOID TimerUpdate(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
-	int difficulty, i;
+	int i;
 	if (m_gameStatus.totalDist <= 1000)
 		difficulty = 3;
 	else if (m_gameStatus.totalDist <= 3000)
 		difficulty = 4;
-	else// if (m_gameStatus.totalDist <= 50000)
+	else if (m_gameStatus.totalDist <= 5000)
 		difficulty = 5;
 	
 	if (BeBorn()>=0)
@@ -502,6 +589,18 @@ BOOL Paused(POINT ptMouse)
 	return PtInRect(&rPause, ptMouse);
 }
 
+BOOL Continued(POINT ptMouse)
+{
+	RECT rPause;
+
+	rPause.left = 0;
+	rPause.top = 0;
+	rPause.right = 720;
+	rPause.bottom = 430;
+
+	return PtInRect(&rPause, ptMouse);
+}
+
 int BeBorn()
 {
 	int i;
@@ -579,7 +678,7 @@ void Dead(HWND hWnd)
 	else if (down_status = 1)
 		KillTimer(hWnd, DOWN_TIMER);
 	KillTimer(hWnd, TIMER_ID);
-	PlaySound((LPCWSTR)IDR_DEAD, NULL, SND_RESOURCE | SND_ASYNC);
+	PlaySound((LPCWSTR)IDR_DEAD, NULL, SND_RESOURCE | SND_SYNC);
 }
 
 void RandTerrian()
@@ -773,10 +872,29 @@ void RandTerrian()
 	}
 }
 
+void BossStart(HWND hWnd)
+{
+	if (jump_status != 0)
+		KillTimer(hWnd, JUMP_TIMER);
+	else if (down_status = 1)
+		KillTimer(hWnd, DOWN_TIMER);
+	KillTimer(hWnd, TIMER_ID);
+	if (m_gameStatus.situation == 2)
+	{
+		m_gameStatus.situation = 4;
+		//PlaySound((LPCWSTR)IDR_BOSS, NULL, SND_RESOURCE | SND_ASYNC | SND_LOOP);
+	}
+	else if (m_gameStatus.situation == 9)
+	{
+		m_gameStatus.situation = 10;
+	}
+	InvalidateRect(hWnd, NULL, FALSE);
+}
+
 VOID KeyDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	//TODO
-	if (m_gameStatus.situation == 2 && m_gameStatus.isPaused == 0)
+	if ((m_gameStatus.situation == 2 || m_gameStatus.situation == 9) && m_gameStatus.isPaused == 0)
 	{
 		switch (wParam)
 		{
@@ -831,7 +949,7 @@ VOID LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	}
 
 	//如果点击了继续或暂停图标
-	if (Paused(ptMouse) && m_gameStatus.situation == 2)
+	if (Paused(ptMouse) && (m_gameStatus.situation == 2 || m_gameStatus.situation == 9))
 	{
 		if (!m_gameStatus.isPaused)
 		{
@@ -851,7 +969,39 @@ VOID LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	{
 		//初始化按钮
 		//创建英雄、建筑
-		m_hero = CreateHero(200, 170, HERO_SIZE_X, HERO_SIZE_Y, m_hHeroBmp, 0, HERO_MAX_FRAME_NUM);
+		m_hero = CreateHero(-52, 170, HERO_SIZE_X, HERO_SIZE_Y, m_hHeroBmp, 0, HERO_MAX_FRAME_NUM);
+		//创建地形
+		int k;
+		for (k = 0; k < MAX_TERRIAN_NUM; ++k)
+		{
+			m_terrian[k] = CreateTerrian(k * 64, 220, STEP_SIZE_X, STEP_SIZE_Y, m_hStepBmp, STEP_SIZE_Y);
+		}
+		//创建游戏状态
+		m_gameStatus = CreateGameStatus(0, 0, GAME_STATUS_SIZE_X, GAME_STATUS_SIZE_Y, m_hGameStatusBmp);
+		m_gameStatus.totalDist = 0;
+		m_gameStatus.totalPoint = 0;
+		//人物状态
+		jump_status = 0;
+		down_status = 0;
+		terriansituation = 11;
+
+		m_gameStatus.situation = 2;
+		PlaySound((LPCWSTR)IDR_THEME, NULL, SND_RESOURCE | SND_ASYNC | SND_LOOP);
+		SetTimer(hWnd, TIMER_ID, TIMER_ELAPSE, NULL);
+		InvalidateRect(hWnd, NULL, FALSE);
+	}
+
+	//如果在PPT放映阶段点了PPT窗口任意位置，继续放映
+	if (Continued(ptMouse) && (m_gameStatus.situation >= 4 && m_gameStatus.situation <= 7))
+	{
+		m_gameStatus.situation++;
+		InvalidateRect(hWnd, NULL, FALSE);
+	}
+
+	//如果在第五张PPT点击屏幕任意阶段，进入boss关卡
+	if (Continued(ptMouse) && m_gameStatus.situation == 8)
+	{
+		m_hero = CreateHero(-52, 170, HERO_SIZE_X, HERO_SIZE_Y, m_hHeroBmp, 0, HERO_MAX_FRAME_NUM);
 		//创建地形
 		int k;
 		for (k = 0; k < MAX_TERRIAN_NUM; ++k)
@@ -865,9 +1015,21 @@ VOID LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		down_status = 0;
 		terriansituation = 11;
 
-		m_gameStatus.situation = 2;
-		PlaySound((LPCWSTR)IDR_THEME, NULL, SND_RESOURCE | SND_ASYNC | SND_LOOP);
+		m_gameStatus.situation = 9;
 		SetTimer(hWnd, TIMER_ID, TIMER_ELAPSE, NULL);
 		InvalidateRect(hWnd, NULL, FALSE);
+	}
+
+	//完成Boss关，最终PPT放映
+	if (Continued(ptMouse) && (m_gameStatus.situation >= 10 && m_gameStatus.situation <= 13))
+	{
+		m_gameStatus.situation++;
+		InvalidateRect(hWnd, NULL, FALSE);
+	}
+
+	//TheEnd界面，点击关闭
+	if (Continued(ptMouse) && m_gameStatus.situation == 14)
+	{
+		SendMessage(hWnd, WM_CLOSE, 0, 0);
 	}
 }

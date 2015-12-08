@@ -68,6 +68,16 @@ HBITMAP	m_hStepBmp;
 HBITMAP m_hStartBmp;
 HBITMAP m_hStoryStartBmp;
 HBITMAP m_hDeadBmp;
+HBITMAP m_hBoss1Bmp;
+HBITMAP m_hBoss2Bmp;
+HBITMAP m_hBoss3Bmp;
+HBITMAP m_hBoss4Bmp;
+HBITMAP m_hBoss5Bmp;
+HBITMAP m_hBoss6Bmp;
+HBITMAP m_hBoss7Bmp;
+HBITMAP m_hBoss8Bmp;
+HBITMAP m_hStoryEndBmp;
+HBITMAP m_hEndBmp;
 
 /*声明英雄、地形、游戏状态*/
 Hero          m_hero;
@@ -101,6 +111,7 @@ int			  terriantype[24][5] = { 0, 0, 0, 0, 0,
 									 3, 3, 3, 3, 3,//22 
 									 1, 1, 1, 1, 1 };//23
 int			  terriansituation;
+int           difficulty;
 
 /*全局函数*/
 //窗体过程函数
@@ -158,6 +169,8 @@ BOOL StoryStartd(POINT ptMouse);
 BOOL Paused(POINT ptMouse);
 //判断是否重新开始
 BOOL Restart(POINT ptMouse);
+//判断PPT是否放映
+BOOL Continued(POINT ptMouse);
 //落地判定
 int BeBorn();
 //右碰撞检测
@@ -170,6 +183,8 @@ void DownTest(HWND hWnd);
 void Dead(HWND hWnd);
 //随机地形
 void RandTerrian();
+//Boss关放映及状态转化
+void BossStart(HWND hWnd);
 //键盘按下事件处理
 VOID KeyDown(HWND hWnd, WPARAM wParam, LPARAM lParam);
 //左鼠标点击事件

@@ -155,17 +155,28 @@
   <ItemGroup>
     <Image Include="res\ui\again.bmp" />
     <Image Include="res\ui\background.bmp" />
+    <Image Include="res\ui\boos1.bmp" />
+    <Image Include="res\ui\boos2.bmp" />
+    <Image Include="res\ui\boos3.bmp" />
+    <Image Include="res\ui\boos4.bmp" />
+    <Image Include="res\ui\boss5.bmp" />
+    <Image Include="res\ui\boss6.bmp" />
+    <Image Include="res\ui\boss7.bmp" />
+    <Image Include="res\ui\boss8.bmp" />
     <Image Include="res\ui\doge.ico" />
+    <Image Include="res\ui\End.bmp" />
     <Image Include="res\ui\game_status.bmp" />
     <Image Include="res\ui\herodoge_gray.bmp" />
     <Image Include="res\ui\start.bmp" />
     <Image Include="res\ui\step.bmp" />
+    <Image Include="res\ui\storyend.bmp" />
     <Image Include="res\ui\storystart.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RunningDoge.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Media Include="res\sound\boss.wav" />
     <Media Include="res\sound\herodie.wav" />
     <Media Include="res\sound\Theme.wav" />
   </ItemGroup>

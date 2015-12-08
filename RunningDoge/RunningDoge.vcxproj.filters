@@ -52,6 +52,36 @@
     <Image Include="res\ui\again.bmp">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="res\ui\boos1.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\ui\boos2.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\ui\boos3.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\ui\boos4.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\ui\boss5.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\ui\boss6.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\ui\boss7.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\ui\boss8.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\ui\storyend.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\ui\End.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RunningDoge.cpp">
@@ -63,6 +93,9 @@
       <Filter>资源文件</Filter>
     </Media>
     <Media Include="res\sound\herodie.wav">
+      <Filter>资源文件</Filter>
+    </Media>
+    <Media Include="res\sound\boss.wav">
       <Filter>资源文件</Filter>
     </Media>
   </ItemGroup>
